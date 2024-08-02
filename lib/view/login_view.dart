@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:notes/firebase_options.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -30,68 +28,61 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.blue,
-          title: const Text(
-            "Register",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
+      appBar: AppBar(
+        title:const  Text(
+          "Login",
+          style: TextStyle(color: Colors.white),
         ),
-        body: FutureBuilder(
-          future: Firebase.initializeApp(
-              options: DefaultFirebaseOptions.currentPlatform),
-          builder: (context, snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.done:
-                return Column(
-                  children: <Widget>[
-                    TextField(
-                      enableSuggestions: false,
-                      autocorrect: false,
-                      keyboardType: TextInputType.emailAddress,
-                      controller: _email,
-                      decoration:
-                          const InputDecoration(hintText: "Enter your email"),
-                    ),
-                    TextField(
-                      controller: _password,
-                      obscureText: true,
-                      enableSuggestions: false,
-                      autocorrect: false,
-                      decoration: const InputDecoration(
-                          hintText: "Enter your password"),
-                    ),
-                    TextButton(
-                        onPressed: () async {
-                          try{
-                          final email = _email.text;
-                          final password = _password.text;
+        backgroundColor: Colors.blue,
+      ),
+      body: Column(
+        children: <Widget>[
+          TextField(
+            enableSuggestions: false,
+            autocorrect: false,
+            keyboardType: TextInputType.emailAddress,
+            controller: _email,
+            decoration: const InputDecoration(hintText: "Enter your email"),
+          ),
+          TextField(
+            controller: _password,
+            obscureText: true,
+            enableSuggestions: false,
+            autocorrect: false,
+            decoration: const InputDecoration(hintText: "Enter your password"),
+          ),
+          TextButton(
+              onPressed: () async {
+                try {
+                  final email = _email.text;
+                  final password = _password.text;
 
-                          final userCredentials = await FirebaseAuth.instance
-                              .signInWithEmailAndPassword(
-                                  email: email, password: password);
+                  final userCredentials = await FirebaseAuth.instance
+                      .signInWithEmailAndPassword(
+                          email: email, password: password);
 
-                          print(userCredentials);}
-                        on FirebaseAuthException  catch (e)
-                          {
-                            if(e.code=='invalid-credential')
-                            {
-                              print("user not found/ invalid credentials");
-                            }
-                            
-                          
-                          }
-                        },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(color: Colors.blue),
-                        ))
-                  ],
-                );
-              default:
-                return const Text('Loading....');
-            }
-          },
-        ));
+                  print(userCredentials);
+                } on FirebaseAuthException catch (e) {
+                  if (e.code == 'invalid-credential') {
+                    print("user not found/ invalid credentials");
+                  }
+                }
+              },
+              child: const Text(
+                "Login",
+                style: TextStyle(color: Colors.blue),
+              )),
+          TextButton(
+              onPressed: () {
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/register', (route) => false);
+              },
+              child: const Text(
+                "Not registered yet? Register here",
+                style: TextStyle(color: Colors.blue),
+              ))
+        ],
+      ),
+    );
   }
 }
