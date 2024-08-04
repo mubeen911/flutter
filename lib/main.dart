@@ -15,7 +15,8 @@ void main() {
     home: const HomePage(),
     routes: {
       '/login': (context) => const LoginView(),
-      '/register': (context) => const RegisterView()
+      '/register': (context) => const RegisterView(),
+      '/notes':(context)=> const NotesView()
     },
   ));
 }
@@ -73,19 +74,18 @@ class _NotesViewState extends State<NotesView> {
             icon: const Icon(Icons.more_vert, color: Colors.white),
             onSelected: (value) async {
               switch (value) {
-                
-
                 case MenuAction.logout:
-                final logout=await showlogoutdialogue(context);
-                log(logout.toString());
-                if(logout)
-                {
-                  await FirebaseAuth.instance.signOut();
-                 
-                  Navigator.of(context).pushNamedAndRemoveUntil('/login', (route)=>false);
-                }
+                  final logout = await showlogoutdialogue(context);
+                  log(logout.toString());
+                  if (logout&&mounted ) {
+                    await FirebaseAuth.instance.signOut();
+                     if(mounted)
+                     {
+                    Navigator.of(context)
+                        .pushNamedAndRemoveUntil('/login', (route) => false);}
+                  }
 
-                break;
+                  break;
               }
             },
             itemBuilder: (context) {
