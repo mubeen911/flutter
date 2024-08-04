@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:notes/constants/route.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -31,7 +32,7 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:const  Text(
+        title: const Text(
           "Login",
           style: TextStyle(color: Colors.white),
         ),
@@ -64,11 +65,20 @@ class _LoginViewState extends State<LoginView> {
                           email: email, password: password);
 
                   log(userCredentials.toString());
-Navigator.of(context).pushNamedAndRemoveUntil('/notes', (_)=> false);
-
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil(notesRoute, (_) => false);
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'invalid-credential') {
-                    log("user not found/ invalid credentials");
+                    await showerrorDialogue(
+                      context,
+                      "User not found /invalid-credential",
+                    );
+                  } else if (e.code == 'invalid-email') {
+                    await showerrorDialogue(
+                        context, 'The email address is badly formatted');
+                  }
+                  else{
+                    await showerrorDialogue(context, 'Error:${e.code}');
                   }
                 }
               },
@@ -79,7 +89,7 @@ Navigator.of(context).pushNamedAndRemoveUntil('/notes', (_)=> false);
           TextButton(
               onPressed: () {
                 Navigator.of(context)
-                    .pushNamedAndRemoveUntil('/register', (route) => false);
+                    .pushNamedAndRemoveUntil(registerRoute, (route) => false);
               },
               child: const Text(
                 "Not registered yet? Register here",
@@ -89,4 +99,25 @@ Navigator.of(context).pushNamedAndRemoveUntil('/notes', (_)=> false);
       ),
     );
   }
+}
+
+Future<void> showerrorDialogue(BuildContext context, String text) {
+  return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("An error occured"),
+          content: Text(text),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'OK',
+                  style: TextStyle(color: Colors.black),
+                ))
+          ],
+        );
+      });
 }
