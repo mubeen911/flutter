@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:notes/constants/route.dart';
+import 'package:notes/utilities/show_error-dialogue.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -59,21 +60,36 @@ class _RegisterViewState extends State<RegisterView> {
                   try {
                     final email = _email.text;
                     final password = _password.text;
-                    final userCredentials = await FirebaseAuth.instance
+                    await FirebaseAuth.instance
                         .createUserWithEmailAndPassword(
                             email: email, password: password);
-
-                    log(userCredentials.toString())
+                       Navigator.of(context).pushNamed(verifyEmailRoute);
+                    final user =  FirebaseAuth.instance.currentUser;
+                    await user?.sendEmailVerification();
                     
-                    ;
+                    
                   } on FirebaseAuthException catch (e) {
+                   
+                    if(context.mounted)
+                    {
                     if (e.code == "weak-password") {
-                      log("password is weak");
+                      showerrorDialogue(context, "password is weak");
                     } else if (e.code == "email-already-in-use") {
-                      log("email is already in use");
+                      showerrorDialogue(context, "emaail is already in use");
                     } else if (e.code == 'invalid-email') {
-                      log("Invalid email is entered");
+                      showerrorDialogue(context, 'invalid email');
                     }
+                    else
+                    {
+                      showerrorDialogue(context, "Error: ${e.code}");
+                    }
+                    }
+                  }
+                  catch(e)
+                  {
+                    if(context.mounted)
+                    {
+                    showerrorDialogue(context, e.toString());}
                   }
                 },
                 child: const Text(

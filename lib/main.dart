@@ -17,7 +17,8 @@ void main() {
     routes: {
       loginRoute: (context) => const LoginView(),
       registerRoute: (context) => const RegisterView(),
-      notesRoute:(context)=> const NotesView()
+      notesRoute:(context)=> const NotesView(),
+      verifyEmailRoute:(context)=> const VerifyEmailView()
     },
   ));
 }
@@ -78,11 +79,12 @@ class _NotesViewState extends State<NotesView> {
                 case MenuAction.logout:
                   final logout = await showlogoutdialogue(context);
                   log(logout.toString());
-                  if (logout ) {
+                  if (logout) {
                     await FirebaseAuth.instance.signOut();
-                    
+                    if(context.mounted)
+                    {
                     Navigator.of(context)
-                        .pushNamedAndRemoveUntil(loginRoute, (route) => false);
+                        .pushNamedAndRemoveUntil(loginRoute, (route) => false);}
                   }
 
                   break;
