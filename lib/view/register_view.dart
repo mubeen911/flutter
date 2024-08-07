@@ -1,7 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:flutter/material.dart';
 import 'package:notes/constants/route.dart';
+import 'package:notes/services/auth/auth_exception.dart';
+import 'package:notes/services/auth/auth_services.dart';
 import 'package:notes/utilities/show_error_dialogue.dart';
 
 class RegisterView extends StatefulWidget {
@@ -60,28 +60,27 @@ class _RegisterViewState extends State<RegisterView> {
                   try {
                     final email = _email.text;
                     final password = _password.text;
-                    await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                        email: email, password: password);
+                    await AuthServices.firebase()
+                        .createUser(email: email, password: password);
+                    await AuthServices.firebase().sendEmailVerification();
                     if (context.mounted) {
                       Navigator.of(context).pushNamed(verifyEmailRoute);
                     }
-                    final user = FirebaseAuth.instance.currentUser;
-                    await user?.sendEmailVerification();
-                  } on FirebaseAuthException catch (e) {
+                  } on WeakPasswordAuthException {
                     if (context.mounted) {
-                      if (e.code == "weak-password") {
-                        showerrorDialogue(context, "password is weak");
-                      } else if (e.code == "email-already-in-use") {
-                        showerrorDialogue(context, "emaail is already in use");
-                      } else if (e.code == 'invalid-email') {
-                        showerrorDialogue(context, 'invalid email');
-                      } else {
-                        showerrorDialogue(context, "Error: ${e.code}");
-                      }
+                      showerrorDialogue(context, "password is weak");
                     }
-                  } catch (e) {
+                  } on EmailAlreadyInUseAuthException {
                     if (context.mounted) {
-                      showerrorDialogue(context, e.toString());
+                      showerrorDialogue(context, "email is already in use");
+                    }
+                  } on InvalidEmailAuthException {
+                    if (context.mounted) {
+                      showerrorDialogue(context, "invalid email");
+                    }
+                  } on GenericAuthException {
+                    if (context.mounted) {
+                      showerrorDialogue(context, "Failed to register");
                     }
                   }
                 },

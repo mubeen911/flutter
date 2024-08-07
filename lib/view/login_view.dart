@@ -1,8 +1,10 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:notes/constants/route.dart';
+import 'package:notes/services/auth/auth_exception.dart';
+import 'package:notes/services/auth/auth_services.dart';
 import 'package:notes/utilities/show_error_dialogue.dart';
 
 class LoginView extends StatefulWidget {
@@ -61,48 +63,37 @@ class _LoginViewState extends State<LoginView> {
                   final email = _email.text;
                   final password = _password.text;
 
-                  final userCredentials = await FirebaseAuth.instance
-                      .signInWithEmailAndPassword(
-                          email: email, password: password);
+                  final userCredentials = await AuthServices.firebase()
+                      .login(email: email, password: password);
 
                   log(userCredentials.toString());
-                  final user = FirebaseAuth.instance.currentUser;
-                  
-                 if(context.mounted)
-                 {
-                  if(user?.emailVerified??false)
-                  {
+                  final user = AuthServices.firebase().currentUser;
+
+                  if (context.mounted) {
+                    if (user?.isEmailVerified ?? false) {
                       Navigator.of(context)
-                      .pushNamedAndRemoveUntil(notesRoute, (_) => false);
-
+                          .pushNamedAndRemoveUntil(notesRoute, (_) => false);
+                    } else {
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                          verifyEmailRoute, (_) => false);
+                    }
                   }
-                  else{
-                         Navigator.of(context)
-                      .pushNamedAndRemoveUntil(verifyEmailRoute, (_) => false);
-                  }
-
-                 
-                 }
-                } on FirebaseAuthException catch (e) {
-                  if(context.mounted)
-                  {
-                  if (e.code == 'invalid-credential') {
+                } on UserNotFoundAuthException {
+                  if (context.mounted) {
                     await showerrorDialogue(
                       context,
                       "User not found /invalid-credential",
                     );
-                  } else if (e.code == 'invalid-email') {
+                  }
+                } on InvalidEmailAuthException {
+                  if (context.mounted) {
                     await showerrorDialogue(
                         context, 'The email address is badly formatted');
-                  } else {
-                    await showerrorDialogue(context, 'Error:${e.code}');
                   }
+                } on GenericAuthException {
+                  if (context.mounted) {
+                    await showerrorDialogue(context, 'Authentication error');
                   }
-                } catch (e) {
-                  if (context.mounted)
-                  {
-                  await showerrorDialogue(context, e.toString());
-                }
                 }
               },
               child: const Text(
