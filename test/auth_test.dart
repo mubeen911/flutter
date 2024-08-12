@@ -84,7 +84,7 @@ class MockAuthProvider implements AuthProvider {
   Future<AuthUser> login({required String email, required String password}) {
     if (!isInitialized) throw NotInitializedException();
     if (email == 'foo@bar.com' && password == 'foobar')throw UserNotFoundAuthException();
-    const user = AuthUser(isEmailVerified: false);
+    const user = AuthUser(isEmailVerified: false );
     _user = user;
     return Future.value(user);
   }
