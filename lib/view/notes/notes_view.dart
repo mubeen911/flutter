@@ -40,11 +40,14 @@ void initState()
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Notes View",
+          "Your Notes",
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.blue,
         actions: [
+          IconButton(onPressed: () {
+            Navigator.of(context).pushNamed(newNotesRoute);
+          }, icon: const Icon(Icons.add, color: Colors.white,)),
           PopupMenuButton<MenuAction>(
             icon: const Icon(Icons.more_vert, color: Colors.white),
             onSelected: (value) async {
@@ -86,12 +89,12 @@ void initState()
               {
                 
                 case ConnectionState.none:
-                  // TODO: Handle this case.
+                
                 case ConnectionState.waiting:
                   return const Text("Waiting for all Notes...");
                
                 default:
-                return CircularProgressIndicator();
+                return  const CircularProgressIndicator();
               }
             });
             default: return const CircularProgressIndicator();

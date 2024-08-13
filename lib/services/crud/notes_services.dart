@@ -10,9 +10,12 @@ import 'package:path/path.dart' show join;
 class NotesServices {
   Database? _db;
   List<DatabaseNotes> _notes = [];
+  static final _shared = NotesServices._sharedInstance();
+  NotesServices._sharedInstance();
+  factory NotesServices() => _shared;
   final _notesStreamController =
       StreamController<List<DatabaseNotes>>.broadcast();
-      Stream <List<DatabaseNotes>> get allNotes=> _notesStreamController.stream;
+  Stream<List<DatabaseNotes>> get allNotes => _notesStreamController.stream;
 
   Future<void> _cacheNotes() async {
     final notes = await getAllNotes();
@@ -34,7 +37,7 @@ class NotesServices {
 
   Future<DatabaseNotes> updateNotes(
       {required DatabaseNotes note, required String text}) async {
-        await  _ensuredbIsOpen();
+    await _ensuredbIsOpen();
     final db = _getDatabaseorThrow();
 
     await getNotes(id: note.id);
@@ -62,7 +65,7 @@ class NotesServices {
   }
 
   Future<DatabaseNotes> getNotes({required int id}) async {
-    await  _ensuredbIsOpen();
+    await _ensuredbIsOpen();
     final db = _getDatabaseorThrow();
     final result =
         await db.query(noteTable, limit: 1, where: 'id = ?', whereArgs: [id]);
@@ -77,17 +80,17 @@ class NotesServices {
     }
   }
 
-  Future<int> deleteAllNotes() async{
-    await  _ensuredbIsOpen();
+  Future<int> deleteAllNotes() async {
+    await _ensuredbIsOpen();
     final db = _getDatabaseorThrow();
-    final numberofDeleltions = await  db.delete(noteTable);
+    final numberofDeleltions = await db.delete(noteTable);
     _notes = [];
     _notesStreamController.add(_notes);
     return numberofDeleltions;
   }
 
   Future<void> deleteNote({required int id}) async {
-   await  _ensuredbIsOpen();
+    await _ensuredbIsOpen();
     final db = _getDatabaseorThrow();
     final deleteCount = await db.delete(
       noteTable,
@@ -103,7 +106,7 @@ class NotesServices {
   }
 
   Future<DatabaseNotes> createNotes({required DatabaseUser owner}) async {
-    await  _ensuredbIsOpen();
+    await _ensuredbIsOpen();
     final db = _getDatabaseorThrow();
 
     final dbUser = await getUser(email: owner.email);
