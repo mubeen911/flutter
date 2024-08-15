@@ -1,11 +1,11 @@
-import 'dart:developer';
 
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:notes/constants/route.dart';
-
 import 'package:notes/enums/menu_action.dart';
 import 'package:notes/services/auth/auth_services.dart';
 import 'package:notes/services/crud/notes_services.dart';
+
 
 class NotesView extends StatefulWidget {
   const NotesView({super.key});
@@ -20,15 +20,13 @@ class _NotesViewState extends State<NotesView> {
   @override
   void initState() {
     _noteServices = NotesServices();
+  
 
     super.initState();
   }
+ 
 
-  @override
-  void dispose() {
-    _noteServices.close();
-    super.dispose();
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +86,29 @@ class _NotesViewState extends State<NotesView> {
                       switch (snapshot.connectionState) {
                         case ConnectionState.none:
                         case ConnectionState.waiting:
-                          return const Text("Waiting for all Notes...");
+                        case ConnectionState.active:
+                          if (snapshot.hasData) {
+                            final allNotes =
+                                snapshot.data as List<DatabaseNotes >;
+                              log(allNotes.toString());
+                            return ListView.builder(
+                                itemCount: allNotes.length,
+                                itemBuilder: (context, index) {
+                                  final note = allNotes[index];
+                                  
+                                  return ListTile(
+                                       title: Text(note.text,
+                                       maxLines: 1,
+                                       softWrap: true,
+                                       overflow: TextOverflow.ellipsis,),
+
+                                  );
+                                  
+                                },);
+                          }
+                           else {
+                            return const CircularProgressIndicator();
+                          }
 
                         default:
                           return const CircularProgressIndicator();

@@ -22,7 +22,8 @@ class _NewNotesViewState extends State<NewNotesView> {
     final currentUser = AuthServices.firebase().currentUser!;
     final email = currentUser.email!;
     final owner = await _notesServices.getUser(email: email);
-    return await _notesServices.createNotes(owner: owner);
+    return  await _notesServices.createNotes(owner: owner);
+    
   }
 
   void _textControllerListner() async {
@@ -32,6 +33,7 @@ class _NewNotesViewState extends State<NewNotesView> {
     }
     final text = _textController.text;
     await _notesServices.updateNotes(note: note, text: text);
+    
   }
 
   void _setUpTextControllerListner() {
@@ -64,7 +66,7 @@ class _NewNotesViewState extends State<NewNotesView> {
 
   @override
   void dispose() {
-    _deleteNoteIfTextIsNotEmpty();
+     _deleteNoteIfTextIsNotEmpty();
     _safeNoteIfTextIsNotEmpty();
     _textController.dispose();
     super.dispose();

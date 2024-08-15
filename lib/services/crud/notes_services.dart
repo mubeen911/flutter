@@ -10,11 +10,16 @@ import 'package:path/path.dart' show join;
 class NotesServices {
   Database? _db;
   List<DatabaseNotes> _notes = [];
-  static final _shared = NotesServices._sharedInstance();
-  NotesServices._sharedInstance();
+  static final NotesServices _shared = NotesServices._sharedInstance();
+  NotesServices._sharedInstance() {
+    _notesStreamController =
+        StreamController<List<DatabaseNotes>>.broadcast(onListen: () {
+      _notesStreamController.sink.add(_notes);
+    });
+  }
   factory NotesServices() => _shared;
-  final _notesStreamController =
-      StreamController<List<DatabaseNotes>>.broadcast();
+  late final StreamController<List<DatabaseNotes>> _notesStreamController;
+
   Stream<List<DatabaseNotes>> get allNotes => _notesStreamController.stream;
 
   Future<void> _cacheNotes() async {
@@ -44,7 +49,8 @@ class NotesServices {
     final updateCount = await db.update(noteTable, {
       colText: text,
       colIsSyncWithCloud: 0,
-    });
+    }, where: 'id=?',
+    whereArgs: [note.id]);
     if (updateCount == 0) {
       throw CouldNotUpdateNotes;
     } else {
@@ -72,7 +78,7 @@ class NotesServices {
     if (result.isEmpty) {
       throw CouldNotFindNotes();
     } else {
-      final note = DatabaseNotes.fromRow(result.first);
+      final note =   DatabaseNotes.fromRow(result.first);
       _notes.removeWhere((note) => note.id == id);
       _notes.add(note);
       _notesStreamController.add(_notes);
@@ -111,16 +117,17 @@ class NotesServices {
 
     final dbUser = await getUser(email: owner.email);
     if (dbUser != owner) {
-      CouldNotFindUser();
+     throw CouldNotFindUser();
     }
     const text = "";
     final noteId = await db.insert(
         noteTable, {colUserId: owner.id, colText: text, colIsSyncWithCloud: 1});
 
-    final note = DatabaseNotes(
+    final note = DatabaseNotes( 
         id: noteId, userId: owner.id, text: text, issyncwithcloud: true);
     _notes.add(note);
     _notesStreamController.add(_notes);
+    
     return note;
   }
 
@@ -258,18 +265,20 @@ const colUserId = 'user_id';
 const colText = 'text';
 const colIsSyncWithCloud = 'is_sync_with_cloud';
 const createUserTable = '''
-              CREATE TABLE IF NOT EXISTS "user" (
-	            "id"	INTEGER NOT NULL,
-	            "email"	TEXT NOT NULL UNIQUE,
-	           PRIMARY KEY("id" AUTOINCREMENT)
-                );''';
-const createTableNotes = ''' CREATE TABLE "notes" (
-	        "id"	INTEGER NOT NULL,
-	        "user_id"	INTEGER NOT NULL,
-	        "text"	TEXT,
-	         "is_sync_with_cloud"	INTEGER NOT NULL DEFAULT 0,
-	         PRIMARY KEY("id" AUTOINCREMENT),
-	         FOREIGN KEY("user_id") REFERENCES "user"("id")
-          );''';
+  CREATE TABLE IF NOT EXISTS "user" (
+    "id" INTEGER NOT NULL,
+    "email" TEXT NOT NULL UNIQUE,
+    PRIMARY KEY("id" AUTOINCREMENT)
+  );''';
+
+const createTableNotes = '''
+  CREATE TABLE IF NOT EXISTS "notes" (
+    "id" INTEGER NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "text" TEXT,
+    "is_sync_with_cloud" INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY("id" AUTOINCREMENT),
+    FOREIGN KEY("user_id") REFERENCES "user"("id")
+  );''';
 const userTable = 'user';
 const noteTable = 'notes';
