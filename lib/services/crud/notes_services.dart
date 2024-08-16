@@ -55,7 +55,7 @@ class NotesServices {
       throw CouldNotUpdateNotes;
     } else {
       final updateNote = await getNotes(id: note.id);
-      _notes.removeWhere((notes) => note.id == updateNote.id);
+      _notes.removeWhere((note) => note.id == updateNote.id);
       _notes.add(updateNote);
       _notesStreamController.add(_notes);
       return updateNote;
