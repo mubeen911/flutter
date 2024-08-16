@@ -24,7 +24,7 @@ Future<T?> showGenericDialog<T>({
                     Navigator.of(context).pop(value);
                   }
                 },
-                child: Text(optionTitle,style: TextStyle(color: Colors.blue),));
+                child: Text(optionTitle,style: const  TextStyle(color: Colors.blue),));
           }).toList(),
         );
       });

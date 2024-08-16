@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:notes/services/auth/auth_services.dart';
 import 'package:notes/services/crud/notes_services.dart';
+import 'package:notes/utilities/generics/get_arguement.dart';
 
-class NewNotesView extends StatefulWidget {
-  const NewNotesView({super.key});
+class CreateUpdateNoteView extends StatefulWidget {
+  const CreateUpdateNoteView({super.key});
 
   @override
-  State<NewNotesView> createState() => _NewNotesViewState();
+  State<CreateUpdateNoteView> createState() => _CreateUpdateNoteViewState();
 }
 
-class _NewNotesViewState extends State<NewNotesView> {
+class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   DatabaseNotes? _note;
   late final NotesServices _notesServices;
   late final TextEditingController _textController;
 
-  Future<DatabaseNotes> createNewNote() async {
+  Future<DatabaseNotes> createOrGetExistingNote(BuildContext context) async {
+    final widgetNote = context.getArguement<DatabaseNotes>();
+    if (widgetNote != null) {
+      _note = widgetNote;
+      _textController.text = widgetNote.text;
+      return widgetNote;
+    }
     final existingNote = _note;
     if (existingNote != null) {
       return existingNote;
@@ -22,8 +29,9 @@ class _NewNotesViewState extends State<NewNotesView> {
     final currentUser = AuthServices.firebase().currentUser!;
     final email = currentUser.email!;
     final owner = await _notesServices.getUser(email: email);
-    return  await _notesServices.createNotes(owner: owner);
-    
+    final newNote = await _notesServices.createNotes(owner: owner);
+    _note = newNote;
+    return newNote;
   }
 
   void _textControllerListner() async {
@@ -33,7 +41,6 @@ class _NewNotesViewState extends State<NewNotesView> {
     }
     final text = _textController.text;
     await _notesServices.updateNotes(note: note, text: text);
-    
   }
 
   void _setUpTextControllerListner() {
@@ -66,7 +73,7 @@ class _NewNotesViewState extends State<NewNotesView> {
 
   @override
   void dispose() {
-     _deleteNoteIfTextIsNotEmpty();
+    _deleteNoteIfTextIsNotEmpty();
     _safeNoteIfTextIsNotEmpty();
     _textController.dispose();
     super.dispose();
@@ -83,11 +90,10 @@ class _NewNotesViewState extends State<NewNotesView> {
           backgroundColor: Colors.blue,
         ),
         body: FutureBuilder(
-            future: createNewNote(),
+            future: createOrGetExistingNote(context),
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.done:
-                  _note = snapshot.data as DatabaseNotes;
                   _setUpTextControllerListner();
                   return TextField(
                     controller: _textController,
