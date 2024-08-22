@@ -1,13 +1,11 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notes/constants/route.dart';
 import 'package:notes/services/auth/auth_exception.dart';
 import 'package:notes/services/auth/bloc/auth_bloc.dart';
 import 'package:notes/services/auth/bloc/auth_events.dart';
+import 'package:notes/services/auth/bloc/auth_state.dart';
 import 'package:notes/utilities/dialoges/error_dialog.dart';
-
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -59,36 +57,38 @@ class _LoginViewState extends State<LoginView> {
             autocorrect: false,
             decoration: const InputDecoration(hintText: "Enter your password"),
           ),
-          TextButton(
-              onPressed: () async {
-                 final email = _email.text;
+          BlocListener<AuthBloc, AuthState>(
+            listener: (context, state)async {
+              if(state is AuthStateLoggedOut)
+              {
+              if(state.exception  is UserNotFoundAuthException) 
+              {
+                await showerrorDialogue(context, 'User not found /invalid-credential');
+
+              }
+              else if( state.exception is InvalidEmailAuthException)
+              {
+                  await showerrorDialogue(context, "User not found /invalid-credential");
+              }
+              else if( state.exception is GenericAuthException)
+              {
+                  await showerrorDialogue(context, 'Authentication error');
+              }
+              }
+            },
+            child: TextButton(
+                onPressed: () async {
+                  final email = _email.text;
                   final password = _password.text;
-                try {
-          context.read<AuthBloc>().add(
-             AuthEventLogIn(email, password)
-          );
-                } on UserNotFoundAuthException {
-                  if (context.mounted) {
-                    await showerrorDialogue(
-                      context,
-                      "User not found /invalid-credential",
-                    );
-                  }
-                } on InvalidEmailAuthException {
-                  if (context.mounted) {
-                    await showerrorDialogue(
-                        context, 'The email address is badly formatted');
-                  }
-                } on GenericAuthException {
-                  if (context.mounted) {
-                    await showerrorDialogue(context, 'Authentication error');
-                  }
-                }
-              },
-              child: const Text(
-                "Login",
-                style: TextStyle(color: Colors.blue),
-              )),
+                  context
+                        .read<AuthBloc>()
+                        .add(AuthEventLogIn(email, password));
+                },
+                child: const Text(
+                  "Login",
+                  style: TextStyle(color: Colors.blue),
+                )),
+          ),
           TextButton(
               onPressed: () {
                 Navigator.of(context)
