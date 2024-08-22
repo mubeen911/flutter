@@ -4,14 +4,34 @@ import 'package:flutter/material.dart' show immutable;
 abstract class AuthEvents {
   const AuthEvents();
 }
-class AuthEventsInitialize extends AuthEvents{
+
+class AuthEventSendEmailVerification extends AuthEvents {
+  const AuthEventSendEmailVerification();
+}
+
+class AuthEventsInitialize extends AuthEvents {
   const AuthEventsInitialize();
 }
-class AuthEventLogIn extends AuthEvents{
+
+class AuthEventLogIn extends AuthEvents {
   final String email;
   final String password;
   const AuthEventLogIn(this.email, this.password);
 }
-class AuthEventLogOut extends AuthEvents{
+
+class AuthEventLogOut extends AuthEvents {
   const AuthEventLogOut();
+}
+
+class AuthEventRegister extends AuthEvents {
+  final String email;
+  final String password;
+  const AuthEventRegister(
+    this.email,
+    this.password,
+  );
+}
+
+class AuthEventShouldRegister extends AuthEvents {
+  const AuthEventShouldRegister();
 }
