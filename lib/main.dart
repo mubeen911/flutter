@@ -6,6 +6,7 @@ import "package:notes/services/auth/bloc/auth_bloc.dart";
 import "package:notes/services/auth/bloc/auth_events.dart";
 import "package:notes/services/auth/bloc/auth_state.dart";
 import "package:notes/services/auth/firebase_auth_provider.dart";
+import "package:notes/view/forget_password_view.dart";
 import "package:notes/view/login_view.dart";
 import "package:notes/view/notes/create_update_note_view.dart";
 import "package:notes/view/notes/notes_view.dart";
@@ -15,12 +16,19 @@ import "package:notes/view/verifyemail_view.dart";
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MaterialApp(
+    theme: ThemeData(
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+        ),
+      ),
     home: BlocProvider<AuthBloc>(
       create: (context) => AuthBloc(FirebaseAuthProvider()),
       child: const HomePage(),
     ),
     routes: {
-  
       createOrUpdateNoteRoute: (context) => const CreateUpdateNoteView()
     },
   ));
@@ -32,41 +40,33 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.read<AuthBloc>().add(const AuthEventsInitialize());
-    return BlocConsumer<AuthBloc,AuthState>(
-      listener: (context, state)
-      {
-        if(state.isLoading)
-        {
-          LoadingScreen().show(context: context, text: state.loadingText??'please wait a moment');
-        }
-        else{
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state.isLoading) {
+          LoadingScreen().show(
+              context: context,
+              text: state.loadingText ?? 'please wait a moment');
+        } else {
           LoadingScreen().hide();
         }
       },
       builder: (context, state) {
-       if(state is AuthStateLoggedIn)
-       {
-        return const NotesView();
-       }
-       else if(state is AuthStateNeedsVerification)
-       {
-        return const VerifyEmailView();
-       }
-       else if(state is AuthStateLoggedOut)
-       {
-        return const LoginView();
-       }
-       else if(state is AuthStateRegistering)
-       {
-        return const RegisterView();
-       }
-       else{
-        return const  Scaffold(
-          body:CircularProgressIndicator() ,
-        );
-       }
+        if (state is AuthStateLoggedIn) {
+          return const NotesView();
+        } else if (state is AuthStateNeedsVerification) {
+          return const VerifyEmailView();
+        } else if (state is AuthStateLoggedOut) {
+          return const LoginView();
+        } else if (state is AuthStateForgetPassword) {
+          return const ForgetPasswordView();
+        } else if (state is AuthStateRegistering) {
+          return const RegisterView();
+        } else {
+          return const Scaffold(
+            body: CircularProgressIndicator(),
+          );
+        }
       },
     );
-   
-}
+  }
 }

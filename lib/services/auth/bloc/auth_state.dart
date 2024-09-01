@@ -6,32 +6,47 @@ import 'package:notes/services/auth/auth_user.dart';
 abstract class AuthState {
   final bool isLoading;
   final String? loadingText;
-  const AuthState({required this .isLoading, this.loadingText='Please wait moment'});
+  const AuthState(
+      {required this.isLoading, this.loadingText = 'Please wait moment'});
 }
 
-class AuthStateUninitialized extends AuthState{
-  const AuthStateUninitialized({required bool isLoading}):super(isLoading: isLoading);
+class AuthStateUninitialized extends AuthState {
+  const AuthStateUninitialized({required super.isLoading});
 }
-class AuthStateRegistering extends AuthState{
+
+class AuthStateRegistering extends AuthState {
   final Exception? exception;
-  const AuthStateRegistering({required this.exception,required isLoading}):super(isLoading: isLoading);
+
+  const AuthStateRegistering(
+      {required this.exception, required super.isLoading});
+}
+
+class AuthStateForgetPassword extends AuthState {
+  final Exception? exception;
+  final bool hasSentEmail;
+  const AuthStateForgetPassword({
+    required this.exception,
+    required this.hasSentEmail,
+    required super.isLoading,
+  });
 }
 
 class AuthStateLoggedIn extends AuthState {
   final AuthUser user;
-  const AuthStateLoggedIn( {required this.user, required super.isLoading});
+  const AuthStateLoggedIn({required this.user, required super.isLoading});
 }
-
 
 class AuthStateNeedsVerification extends AuthState {
-  const AuthStateNeedsVerification({required bool isLoading}):super(isLoading: isLoading);
+  const AuthStateNeedsVerification({required super.isLoading});
 }
 
-class AuthStateLoggedOut extends AuthState with EquatableMixin  {
+class AuthStateLoggedOut extends AuthState with EquatableMixin {
   final Exception? exception;
-   
-  const AuthStateLoggedOut( {required this.exception, required bool isLoading, String? loadingText}):super(isLoading: isLoading, loadingText: loadingText);
-   @override
-  List<Object?> get props => [exception , isLoading];
-}
 
+  const AuthStateLoggedOut(
+      {required this.exception,
+      required super.isLoading,
+      super.loadingText = null});
+  @override
+  List<Object?> get props => [exception, isLoading];
+}
